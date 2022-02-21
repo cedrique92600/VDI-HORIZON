@@ -1,0 +1,84 @@
+2.1	Machine creation
+
+In this part, we will consider creation of machine virtual Ubunt.
+
+2.1.1	Prerequisite 
+
+Version : Ubuntu 20.04 x64
+
+vSphere : 6.5 or later
+
+Horizon Connection Server
+
+2.1.2	VM Setting 
+
+vCPU : 2 minimum
+
+Memories : 2 RAM min
+
+Network : Verified DNS -> to resolve the name of Domain
+
+
+2.1.3	Display Setting
+
+We must install a display desktop named “Gnome Desktop”, it’s mandatory. 
+
+Apt-get upgrade
+Apt-get update
+apt-get install ubuntu-gnome-desktop
+
+2.1.4	Dependency Packages
+
+o	VM-Tools :
+
+VM must communicate with vSphere to monitor and have information on VM. VM-tool allow to do that.
+
+apt-get install open-vm-tools-desktop
+
+o	Change Hostname
+
+For Ubuntu, we must change the machine name 
+
+Nano /etc/hosts | 127.0.0.1 hostname.domainname hostname
+
+o	Dependency Packages :
+
+Master Linux need packages before installing Horizon Agent
+
+apt-get install python python-dbus python-gobject
+
+2.1.5	Active Directory 
+
+For instant-clone and Ubuntu OS, the solution is PSIBO.
+
+PSIBO allow an authentication with our domain controller.
+
+o	Link for download
+
+https://github.com/BeyondTrust/pbis-open/releases
+
+o	Install PSIBO on your Linux virtual machine
+
+wget “link.deb.sh“
+Chmod +x 
+./pbis
+Cd /opt/pbis/bin
+Domainjoin-cli join -disable ssh DOMAIN user
+
+o	Configuration user environment 
+
+The netbios name of your AD
+/opt/pbis/bin/config UserDomainPrefix [Domain]
+
+The setting is for a single AD to allow connected automatically without to indicate domain name.
+/opt/pbis/bin/config AssumeDefaultDomain True
+
+User uses bash to connect 
+/opt/pbis/bin/config LoginShellTemplate /bin/bash
+If several domains have configured not to do this commande. User will have to indicate the domaine. The setting is configurable in /etc/vmware/viewagent-custom.conf.
+
+Create a folder during the connection 
+opt/pbis/bin/config HomeDirTemplate %H/%U
+
+Edit file common-session in /etc/pamd.d/. To change PAM Authentification stack.
+session sufficient pam_lsass.so -> session [success=ok default=ignore] pam_lsass.so
